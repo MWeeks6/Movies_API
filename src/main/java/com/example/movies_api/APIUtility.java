@@ -1,7 +1,9 @@
 package com.example.movies_api;
 
 import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -20,7 +22,7 @@ public class APIUtility {
 
         String uri = "http://www.omdbapi.com/?apikey=ac34f608&s=" + movieName;//URI =
 
-        //configure the environment to make a HTTP request (this includes an update to the
+        //configure the environment to make an HTTP request (this includes an update to the
         // module-info.java file)
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest httpRequest = HttpRequest.newBuilder().uri(URI.create(uri)).build();
@@ -34,5 +36,20 @@ public class APIUtility {
         Gson gson = new Gson();
 
         return gson.fromJson(httpResponse.body(), APIResponse.class);
+    }
+
+    public static APIResponse getMoviesFromFile(String fileName){
+        Gson gson = new Gson();
+        //benefit of putting this in the round brackets () = automatically close it (call the .close())
+        try(
+                FileReader fileReader = new FileReader(fileName);
+                JsonReader jsonReader = new JsonReader(fileReader);
+                ){
+            return gson.fromJson(jsonReader, APIResponse.class);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        return null;
     }
 }

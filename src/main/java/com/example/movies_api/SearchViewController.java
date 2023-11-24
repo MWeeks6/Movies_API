@@ -87,5 +87,11 @@ public class SearchViewController {
 
     }
 
+    @FXML
+    void getMovieDetails(ActionEvent event) throws IOException {
+        Movie movieSelected = listView.getSelectionModel().getSelectedItem();
+        SceneChanger.changeScenes(event, "info-view.fxml", movieSelected.getImdbID());
+    }
+
 }
 
