@@ -1,5 +1,6 @@
 package com.example.movies_api;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -73,23 +74,22 @@ public class SearchViewController {
     private void movieSearch(ActionEvent event) throws IOException, InterruptedException {
         page = 1;
         String movieName = searchTextField.getText().trim();
-        APIResponse apiResponse = APIUtility.callAPI(movieName);
+        APIResponse apiResponse = APIUtility.callAPI(movieName, page);
         totalNumOfMovies = Integer.parseInt(apiResponse.getTotalResults());
+
         if(apiResponse.getMovies() != null){
             titlesVBox.setVisible(true);
             listView.getItems().clear();
             listView.getItems().addAll(apiResponse.getMovies());
             updateLabels();
+            if(listView.getItems().size() < totalNumOfMovies)
+                fetchAllButton.setVisible(true);
         }
         else{
             titlesVBox.setVisible(false);
             msgLabel.setVisible(true);
             msgLabel.setText("Enter a movie title and click \"Search\"");
         }
-
-
-
-
     }
 
     @FXML
@@ -99,8 +99,38 @@ public class SearchViewController {
     }
 
     @FXML
-    void fetchAll(ActionEvent event) throws IOException, InterruptedException {
+    void fetchAll(){
+        //without threads
+        //issue with this is that the application stops working until
+//            page++;
+//            APIResponse fetchMovies = APIUtility.callAPI(searchTextField.getText(), page);
+//            listView.getItems().addAll(fetchMovies.getMovies());
+//            updateLabels();
+//
+//        if(listView.getItems().size() > totalNumOfMovies)
+//            fetchAll();
+        //Threads allows the application to still be functional while doing a task such as getting all the movies
+        Thread fetch = new Thread(()->{
+            page++;
+            progressBar.setVisible(true);
+            try {
+                APIResponse fetchAllResponse = APIUtility.callAPI(searchTextField.getText().trim(), page);
+                listView.getItems().addAll(fetchAllResponse.getMovies());
 
+                Platform.runLater(() -> {
+                    updateLabels();
+                    progressBar.setProgress((double)listView.getItems().size() / totalNumOfMovies);
+                });
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            if(listView.getItems().size() < totalNumOfMovies) {
+                fetchAll();
+
+            }
+            progressBar.setVisible(false);
+        });
+        fetch.start();
     }
     private void updateLabels(){
         resultsLabel.setText("Showing " + listView.getItems().size() + " of " + totalNumOfMovies);

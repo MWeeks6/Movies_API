@@ -18,7 +18,7 @@
          <children>
             <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="10.0">
                <children>
-                  <ProgressBar fx:id="progressBar" prefWidth="200.0" progress="0.0" visible="false" />
+                  <ProgressBar fx:id="progressBar" prefWidth="200.0" progress="0.0" />
                   <TextField fx:id="searchTextField" promptText="Enter Movie Title" />
                   <Button mnemonicParsing="false" onAction="#movieSearch" text="Search" />
                </children>
