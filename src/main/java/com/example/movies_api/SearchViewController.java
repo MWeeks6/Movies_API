@@ -2,10 +2,7 @@ package com.example.movies_api;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -15,7 +12,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class SearchViewController {
-
+    @FXML
+    private Button fetchAllButton;
     @FXML
     private ListView<Movie> listView;
 
@@ -42,12 +40,15 @@ public class SearchViewController {
 
     @FXML
     private VBox titlesVBox;
+
+    private int page, totalNumOfMovies;
     @FXML
     private void initialize(){
         progressBar.setVisible(false);
         selectedVBox.setVisible(false);
         titlesVBox.setVisible(false);
         msgLabel.setVisible(false);
+        fetchAllButton.setVisible(false);
 
         listView.getSelectionModel()
                 .selectedItemProperty()//disallows multiple selection
@@ -70,13 +71,15 @@ public class SearchViewController {
     }
     @FXML
     private void movieSearch(ActionEvent event) throws IOException, InterruptedException {
+        page = 1;
         String movieName = searchTextField.getText().trim();
         APIResponse apiResponse = APIUtility.callAPI(movieName);
+        totalNumOfMovies = Integer.parseInt(apiResponse.getTotalResults());
         if(apiResponse.getMovies() != null){
             titlesVBox.setVisible(true);
             listView.getItems().clear();
             listView.getItems().addAll(apiResponse.getMovies());
-            resultsLabel.setText("Showing " + listView.getItems().size() + " of " + apiResponse.getTotalResults());
+            updateLabels();
         }
         else{
             titlesVBox.setVisible(false);
@@ -85,12 +88,27 @@ public class SearchViewController {
         }
 
 
+
+
     }
 
     @FXML
-    void getMovieDetails(ActionEvent event) throws IOException {
+    void getMovieDetails(ActionEvent event) throws IOException, InterruptedException {
         Movie movieSelected = listView.getSelectionModel().getSelectedItem();
         SceneChanger.changeScenes(event, "info-view.fxml", movieSelected.getImdbID());
+    }
+
+    @FXML
+    void fetchAll(ActionEvent event) throws IOException, InterruptedException {
+
+    }
+    private void updateLabels(){
+        resultsLabel.setText("Showing " + listView.getItems().size() + " of " + totalNumOfMovies);
+        if(totalNumOfMovies < listView.getItems().size()){
+            fetchAllButton.setVisible(true);
+        }
+        else
+            fetchAllButton.setVisible(false);
     }
 
 }
